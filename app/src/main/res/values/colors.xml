@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Warna untuk item di BottomNavigation -->
+    <color name="bottom_navigation_item_color">#FF6200EE</color> <!-- Warna item bottom navigation -->
+
+    <!-- Warna latar belakang bottom navigation -->
+    <color name="bottom_navigation_background">#FFFFFF</color> <!-- Warna putih -->
+
+    <!-- Footer dengan warna abu-abu -->
+    <color name="footer_background">#E0E0E0</color> <!-- Warna abu-abu terang -->
+    <color name="white_gray">#F5F5F5</color> <!-- Warna abu-abu terang untuk background -->
+</resources>
