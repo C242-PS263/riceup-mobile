@@ -1,0 +1,90 @@
+package com.riceup.riceapp.ui.camera
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.dicoding.asclepius.R
+import com.dicoding.asclepius.databinding.FragmentCameraBinding
+
+class CameraFragment : Fragment() {
+
+    private var _binding: FragmentCameraBinding? = null
+    private val binding get() = _binding!!
+
+    private val requestCameraPermissionLauncher = 
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                openCamera()
+            } else {
+                Toast.makeText(requireContext(), "Camera permission denied.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    private val takePictureLauncher = 
+        registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
+            if (bitmap != null) {
+                binding.previewImageView.setImageBitmap(bitmap)
+                sendImageToMainActivity(bitmap)
+            } else {
+                Toast.makeText(requireContext(), "Failed to capture image.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCameraBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.captureButton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                openCamera()
+            } else {
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun openCamera() {
+        takePictureLauncher.launch(null)
+    }
+
+    private fun sendImageToMainActivity(bitmap: Bitmap) {
+        try {
+            val uri = MediaStore.Images.Media.insertImage(
+                requireContext().contentResolver,
+                bitmap,
+                "CapturedImage",
+                null
+            )
+            val mainActivity = activity as? MainActivity
+            uri?.let { mainActivity?.onImageCaptured(it) }
+        } catch (e: Exception) {
+            Log.e("CameraFragment", "Error sending image to MainActivity: ${e.message}")
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
