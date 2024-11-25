@@ -17,7 +17,7 @@ import com.dicoding.asclepius.R
 import com.yalantis.ucrop.UCrop
 
 //tolong ganti import ini
-import com.dicoding.asclepius.databinding.ActivityMainBinding
+import com.dicoding.riceup.databinding.FragmentCameraBinding
 import com.dicoding.asclepius.helper.ImageClassifierHelper
 import com.dicoding.riceup.ui.camera.CameraViewModel 
 
