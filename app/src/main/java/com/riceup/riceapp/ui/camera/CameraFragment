@@ -19,14 +19,14 @@ import com.yalantis.ucrop.UCrop
 //tolong ganti import ini
 import com.dicoding.asclepius.databinding.ActivityMainBinding
 import com.dicoding.asclepius.helper.ImageClassifierHelper
-import com.dicoding.asclepius.view.viewmodel.HomeViewModel 
+import com.dicoding.riceup.ui.camera.CameraViewModel 
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity(), ImageClassifierHelper.ClassifierListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var imageClassifierHelper: ImageClassifierHelper
     private var currentImageUri: Uri? = null
-    private val homeViewModel: HomeViewModel by viewModels()
+    private val ViewModel: CameraViewModel  by viewModels()
 
     private val launcherIntentGallery = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity(), ImageClassifierHelper.ClassifierListen
         // Setup ImageClassifier
         imageClassifierHelper = ImageClassifierHelper(context = this, classifierListener = this)
 
-        homeViewModel.selectedImageUri.observe(this) { uri ->
+        ViewModel.selectedImageUri.observe(this) { uri ->
             uri?.let {
                 binding.previewImageView.setImageURI(uri)
                 imageClassifierHelper.classifyStaticImage(uri)
