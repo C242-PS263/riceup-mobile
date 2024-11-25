@@ -61,26 +61,23 @@
         android:layout_marginBottom="16dp" />
 
     <!-- Bottom Navigation -->
-    <LinearLayout
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#F5F5F5"
-        android:padding="8dp">
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_home"
-            app:tint="#4CAF50"
-            tools:ignore="ContentDescription" />
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_camera"
-            app:tint="#9E9E9E"
-            tools:ignore="ContentDescription" />
-    </LinearLayout>
+        android:layout_gravity="bottom"
+        android:background="?android:attr/windowBackground"
+        app:itemIconTint="@color/selector_bottom_nav_color"
+        app:menu="@menu/bottom_nav_menu" />
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom"
+        android:layout_marginBottom="40dp"
+        app:backgroundTint="@color/green"
+        app:srcCompat="@drawable/ic_camera" />
 
 </LinearLayout>

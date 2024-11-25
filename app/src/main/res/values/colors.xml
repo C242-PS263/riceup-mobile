@@ -8,5 +8,6 @@
 
     <!-- Footer dengan warna abu-abu -->
     <color name="footer_background">#E0E0E0</color> <!-- Warna abu-abu terang -->
-    <color name="white_gray">#F5F5F5</color> <!-- Warna abu-abu terang untuk background -->
+    <color name="white_gray">#F5F5F5</color>
+    <color name="green">green</color> <!-- Warna abu-abu terang untuk background -->
 </resources>
