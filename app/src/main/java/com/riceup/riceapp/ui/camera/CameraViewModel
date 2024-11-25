@@ -1,0 +1,29 @@
+package com.riceup.riceapp.ui.camera
+
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+
+class HomeViewModel : ViewModel() {
+
+    private val _selectedImageUri = MutableLiveData<Uri?>()
+    val selectedImageUri: LiveData<Uri?> get() = _selectedImageUri
+
+    private val _selectedImageBitmap = MutableLiveData<Bitmap?>()
+    val selectedImageBitmap: LiveData<Bitmap?> get() = _selectedImageBitmap
+
+    fun setSelectedImageUri(uri: Uri?) {
+        _selectedImageUri.value = uri
+    }
+
+    fun setSelectedImageBitmap(bitmap: Bitmap?) {
+        _selectedImageBitmap.value = bitmap
+    }
+
+    fun clearImage() {
+        _selectedImageUri.value = null
+        _selectedImageBitmap.value = null
+    }
+}
