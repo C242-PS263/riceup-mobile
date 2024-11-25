@@ -1,1 +1,152 @@
+package com.dicoding.riceup.ui.camera
+
+import android.content.ContentValues.TAG
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import com.dicoding.asclepius.R
+import com.yalantis.ucrop.UCrop
+
+//tolong ganti import ini
+import com.dicoding.asclepius.databinding.ActivityMainBinding
+import com.dicoding.asclepius.helper.ImageClassifierHelper
+import com.dicoding.asclepius.view.viewmodel.HomeViewModel 
+
+@Suppress("DEPRECATION")
+class MainActivity : AppCompatActivity(), ImageClassifierHelper.ClassifierListener {
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var imageClassifierHelper: ImageClassifierHelper
+    private var currentImageUri: Uri? = null
+    private val homeViewModel: HomeViewModel by viewModels()
+
+    private val launcherIntentGallery = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val selectedImg = result.data?.data
+            selectedImg?.let { uri ->
+                startCrop(uri)
+            }
+        } else {
+            showToast("Failed to retrieve image.")
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            val resultUri = UCrop.getOutput(data!!)
+            resultUri?.let { uri ->
+                currentImageUri = uri
+                showImage()
+            }
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            val cropError = UCrop.getError(data!!)
+            cropError?.let {
+                Log.e(TAG, "Crop error: ${it.message}")
+                showToast("Crop failed: ${it.message}")
+            }
+        }
+    }
+
+    private fun startCrop(uri: Uri) {
+        val destinationUri = Uri.fromFile(cacheDir.resolve("${System.currentTimeMillis()}.jpg"))
+        UCrop.of(uri, destinationUri)
+            .withAspectRatio(16F, 9F)
+            .withMaxResultSize(2000, 2000)
+            .start(this)
+    }
+
+    override fun onError(error: String) {
+        Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
+        Log.e(TAG, "Classifier error: $error")
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Setup ImageClassifier
+        imageClassifierHelper = ImageClassifierHelper(context = this, classifierListener = this)
+
+        homeViewModel.selectedImageUri.observe(this) { uri ->
+            uri?.let {
+                binding.previewImageView.setImageURI(uri)
+                imageClassifierHelper.classifyStaticImage(uri)
+            }
+        }
+
+        binding.galleryButton.setOnClickListener {
+            startGallery()
+        }
+
+        binding.analyzeButton.setOnClickListener {
+            currentImageUri?.let { uri ->
+                analyzeImage(uri)
+            } ?: showToast("Please select an image first.")
+        }
+    }
+
+    override fun onResults(results: List<Classifications>?) {
+        results?.firstOrNull()?.categories?.firstOrNull()?.let { category ->
+            val resultString = "${category.label}: ${category.score * 100}%"
+            moveToResult(currentImageUri, resultString)
+        }
+    }
+
+    private fun startGallery() {
+        val intent = Intent()
+        intent.action = Intent.ACTION_GET_CONTENT
+        intent.type = "image/*"
+        val chooser = Intent.createChooser(intent, "Choose a Picture")
+        launcherIntentGallery.launch(chooser)
+    }
+
+    private fun showImage() {
+        currentImageUri?.let { uri ->
+            binding.previewImageView.setImageURI(uri)
+            imageClassifierHelper.classifyStaticImage(uri)
+        }
+    }
+
+    private fun analyzeImage(imageUri: Uri) {
+        try {
+            val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val source = ImageDecoder.createSource(contentResolver, imageUri)
+                ImageDecoder.decodeBitmap(source)
+            } else {
+                MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+            }.copy(Bitmap.Config.ARGB_8888, true)
+
+            bitmap?.let {
+                imageClassifierHelper.classifyStaticImage(imageUri)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to analyze image.", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "analyzeImage: ${e.message}")
+        }
+    }
+
+    private fun moveToResult(imageUri: Uri?, resultString: String) {
+        val intent = Intent(this, ResultActivity::class.java)
+        intent.putExtra(ResultActivity.EXTRA_IMAGE_URI, imageUri.toString())
+        intent.putExtra(ResultActivity.EXTRA_RESULT, resultString)
+        startActivity(intent)
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}
 
