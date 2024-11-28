@@ -1,0 +1,60 @@
+package com.dicoding.riceup.ui.result
+
+import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.util.Log
+import com.dicoding.riceup.ui.result.databinding.ActivityResultBinding
+
+// ini mau fragment apa activity
+
+class ResultActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityResultBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityResultBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Menampilkan gambar dan hasil prediksi
+        val imageUri = Uri.parse(intent.getStringExtra(EXTRA_IMAGE_URI))
+        imageUri?.let {
+            Log.d("Image URI", "showImage: $it")
+            binding.resultImage.setImageURI(it)
+        }
+
+        val analysisResult = intent.getStringExtra(EXTRA_RESULT)
+        analysisResult?.let {
+            binding.resultText.text = it
+        }
+
+        // Menyimpan gambar dan hasil analisis ke History
+        imageUri?.let { uri ->
+            analysisResult?.let { result ->
+                saveToHistory(uri, result)  // Memanggil fungsi untuk menyimpan data ke SharedPreferences
+            }
+        }
+    }
+
+    private fun saveToHistory(imageUri: Uri, analysisResult: String) {
+        val sharedPreferences = getSharedPreferences("History", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        val images = sharedPreferences.getStringSet("images", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        val results = sharedPreferences.getStringSet("results", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+
+        images.add(imageUri.toString())
+        results.add(analysisResult)
+
+        editor.putStringSet("images", images)
+        editor.putStringSet("results", results)
+        editor.apply()
+    }
+
+    //buat room untuk simpan
+
+    companion object {
+        const val EXTRA_IMAGE_URI = "extra_image_uri"
+        const val EXTRA_RESULT = "extra_result"
+    }
+}
